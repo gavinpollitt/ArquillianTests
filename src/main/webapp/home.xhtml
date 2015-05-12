@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+ xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+	<title>Home</title>
+</h:head>
+<h:body>
+	<h:messages />
+	<h:form prependId="false">
+		<h:commandButton value="Who Am I ?" action="#{loginController.renderLoggedIn}">
+			<f:ajax render="whoami" />
+		</h:commandButton>
+		<h:panelGroup id="whoami">
+			<h:panelGroup rendered="#{loginController.renderedLoggedIn}">
+				<p>You are signed in as #{currentUser.username}.</p>
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:form>
+</h:body>
+</html>
