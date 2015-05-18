@@ -1,0 +1,1 @@
+INSERT INTO 'credentials' ('id','username', 'password') VALUES (1,'demo','demo123');

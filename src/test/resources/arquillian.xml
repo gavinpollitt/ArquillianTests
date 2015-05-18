@@ -5,11 +5,13 @@
         http://jboss.org/schema/arquillian
         http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
+	<!--  For chrome to be run by Drone/Graphite, 'chromeDriveBinary' setting is required -->
   	<extension qualifier="webdriver">
         <property name="browser">${browser}</property>
         <property name="chromeDriverBinary">/home/gavin/chrome/chromedriver</property>
     </extension>
     
+    <!--  Where plug-in in POM does not do the business, e.g. Eclipse UT, these settings will do the job -->
     <container qualifier="jbossas-managed" default="true">
         <configuration>
             <!-- If you want to use an existing JBoss AS installation, change the value of this property to that path -->
