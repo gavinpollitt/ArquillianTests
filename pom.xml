@@ -95,8 +95,8 @@
 			<artifactId>httpcore</artifactId>
 			<version>4.4.1</version>
 		</dependency>
-		<!--  Had to do the exclusions and new logging versions because it was
-		simply screwed with the wrong dependency versions -->
+		<!-- Had to do the exclusions and new logging versions because it was simply 
+			screwed with the wrong dependency versions -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
@@ -134,7 +134,14 @@
 			<artifactId>jboss-logging-processor</artifactId>
 			<version>2.0.0.Final</version>
 		</dependency>
-			<!-- Covered by Hibernate <dependency> <groupId>javax.persistence</groupId> 
+		<!--  Needed to add the below to prevent the StaticLogBinder issue -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.2</version>
+		</dependency>
+
+		<!-- Covered by Hibernate <dependency> <groupId>javax.persistence</groupId> 
 			<artifactId>persistence-api</artifactId> <version>1.0.2</version> </dependency> -->
 		<dependency>
 			<groupId>javax.validation</groupId>
@@ -225,9 +232,9 @@
 				<configuration>
 					<environmentVariables>
 						<JBOSS_HOME>${project.build.directory}/wildfly-${version.wildfly}</JBOSS_HOME>
-						<java.util.logging.config.file>
-							${project.build.testOutputDirectory}/logging.properties
-						</java.util.logging.config.file>
+						<org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
+						<!-- <java.util.logging.config.file> ${project.build.testOutputDirectory}/logging.properties 
+							</java.util.logging.config.file> -->
 					</environmentVariables>
 				</configuration>
 			</plugin>
