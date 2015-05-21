@@ -16,3 +16,11 @@ As this runs in a container to facilitate JPA persistence, Arquillian will provi
 | LoginScreenGrapheneTest      | This follows the pattern of the above, but uses the true persistence layer. This caused ALL kinds of problems when setting up. Even through it's running in 'mixed-mode' (i.e. at least one test 'RunAsClient' and at least one in the container), there were class loading issues with the WebDriver class in the container even though it is only required on the client. This was overcome by enriching the deployment with the Selenium packages. A 'dummy' test was created to load the data into the H2 database with the Arquillian Persistence extensions and clean-up switched off to ensure data wasn't cleared before next test.                                                                                                                                                                                                   |
 
 *One key element is that all the test 'plumbing' is performed in the test layer of the project; the true application code is completely test agnostic.*
+
+# The Application
+
+The structure is represented in the following: [file system](./fs.html)
+
+The files are heavily commented, especially with any of the esoteric things encountered.
+
+It's not big, it's not clever, but it contains the foundations of quite a few important concepts and workarounds.
