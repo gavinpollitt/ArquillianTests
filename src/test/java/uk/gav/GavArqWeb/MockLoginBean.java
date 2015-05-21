@@ -1,7 +1,9 @@
 package uk.gav.GavArqWeb;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -17,6 +19,11 @@ import javax.enterprise.inject.Specializes;
 public class MockLoginBean extends LoginBean {
 
 	private static final Map<String,String> CREDS = new HashMap<String,String>(3);
+
+	// Use standard Java logging. Note that as this bean is hosted in container, it it the container
+	// logging.properties that will be used rather than that defined by this project.
+	private static Logger log = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+
 	
 	static {
 		CREDS.put("demo", "demo123");
@@ -25,7 +32,7 @@ public class MockLoginBean extends LoginBean {
 	}
 
 	public Credentials findPerson(String user) throws Exception{
-		System.out.println("MOCK:FIND PERSON rows in DB::" + CREDS.size());
+		log.info("MOCK:FIND PERSON rows in DB::" + CREDS.size());
 
 		
 		if (CREDS.get(user) != null) {

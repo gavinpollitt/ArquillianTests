@@ -3,6 +3,9 @@ package uk.gav.GavArqWeb;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -25,14 +28,17 @@ import org.junit.runner.RunWith;
 
 /**
  * 
- * This will use the default Hibernate Entity Manager to persist data.
- * Not really required in a container, but it was a loose end from another test
- * Will try with Aquillian Extensions in the next test. 
+ * This will use the default Hibernate Entity Manager to persist data, but directly
+ * from container, not using UI to drive this test.
  */
 @RunWith(Arquillian.class)
 public class BeanandExtensionAccessTest {
 
+	// Use standard Java logging. Note that as this bean is hosted in container, it it the container
+	// logging.properties that will be used rather than that defined by this project.
+	private static Logger log = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
 
+	// Use the true LoginBean for this test.
 	@Deployment
 	public static Archive<JavaArchive> createJARDeployment() {
 
@@ -46,10 +52,9 @@ public class BeanandExtensionAccessTest {
 				.addClasses(Credentials.class, LoginBean.class)
 				.addAsManifestResource("testing-persistence.xml",
 						"persistence.xml")
-				.addAsManifestResource("jbossas-ds.xml")
 				.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
-		System.out.println("Content is::" + persJar.toString(true));
+		log.fine("Content of SW jar is::" + persJar.toString(true));
 		return persJar;
 	}
 
@@ -72,7 +77,7 @@ public class BeanandExtensionAccessTest {
 	@Cleanup(phase=TestExecutionPhase.NONE)
 	public void persist() throws Exception {
 		Query q = em.createQuery("SELECT id from Credentials");
-		System.out.println("persist:::Rows in the DB::" + q.getResultList().size());
+		log.info("persist:::Rows now in the DB::" + q.getResultList().size());
 		assertEquals(3, q.getResultList().size());
 	}
 	
@@ -81,7 +86,6 @@ public class BeanandExtensionAccessTest {
 	@InSequence(2)
 	@Cleanup(phase=TestExecutionPhase.AFTER)
 	public void testGoodCredentials() throws Exception {
-		System.out.println("TestExecutionPhase");
 		Credentials c = loginBean.findPerson("gavin");
 		assertEquals("pollitt", c.getPassword());
 		c = loginBean.findPerson("demo");
@@ -90,10 +94,10 @@ public class BeanandExtensionAccessTest {
 		assertNotEquals("longlivetheking", c.getPassword());
 	}
 	
+	// Note, that this test will pass if the Exception is thrown, hence the 'expected' property.
 	@Test(expected=Exception.class)
 	@InSequence(3)
 	public void testBadCredentials() throws Exception {
-		System.out.println("testBadCredentials");
 		Credentials c = loginBean.findPerson("gavin");
 		assertEquals("pollitt", c.getPassword());
 	}	

@@ -1,5 +1,10 @@
 package uk.gav.GavArqWeb;
 
+/**
+ * 
+ * @author gavin
+ * Utility bean to identify the logged-in user. Will be '@Produced'
+ */
 public class User {
     private String username;
 

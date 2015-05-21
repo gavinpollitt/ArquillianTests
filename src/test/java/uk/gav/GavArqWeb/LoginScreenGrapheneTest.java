@@ -7,7 +7,9 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -36,15 +38,20 @@ import org.openqa.selenium.support.FindBy;
  * 
  * @author gavin
  *
- *         'browser' will be injected with the appropriate browser
- *         implementation taken from arquillian.xml config 'deploymentUrl' will
- *         be injected with the initial URL context The 'FindBy' annotations
- *         will inject the corresponding variables with the corresponding
+ *         'browser' will be injected with the appropriate selenium-based browser wrapper
+ *         implementation taken from arquillian.xml config. 
+ *         'deploymentUrl' wil be injected with the initial URL context. 
+ *         The 'FindBy' annotations will inject the corresponding variables with the corresponding
  *         elements from the html rendered
  * 
  */
 @RunWith(Arquillian.class)
 public class LoginScreenGrapheneTest {
+
+	// Use standard Java logging. Note that as this bean is hosted in container, it it the container
+	// logging.properties that will be used rather than that defined by this project.
+	private static Logger log = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+
 	private static final String WEBAPP_SRC = "src/main/webapp";
 
 	@FindBy
@@ -69,7 +76,7 @@ public class LoginScreenGrapheneTest {
 
 	@Deployment(name = "login")
 	public static Archive<WebArchive> createWARDeployment() {
-		// Create the web archive to test
+		// Create the web archive to test. No Mock added this time around
 		WebArchive war = ShrinkWrap
 				.create(WebArchive.class, "login.war")
 				.addClasses(Credentials.class, User.class,
@@ -80,14 +87,20 @@ public class LoginScreenGrapheneTest {
 				.addAsResource("testing-persistence.xml",
 						"META-INF/persistence.xml")
 				.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+				// Always need at least this minimum file for a faces deployment
 				.addAsWebInfResource(
 						new StringAsset("<faces-config version=\"2.0\"/>"),
 						"faces-config.xml");
 
-		System.out.println("WAR Content is::" + war.toString(true));
+		log.fine("WAR Content is::" + war.toString(true));
 		return war;
 	}
 
+	// JAR file to 'gently persuade' Arquillian to perform an initial data set-up using
+	// the Arquillian persistence extensions.
+	// Note the addition of the Selenium packages. This overcomes the odd issues where the
+	// setup test is expecting the WebDriver class for some reason even though it's not used
+	// and is injected directly into the other test.
 	@Deployment(name = "setup")
 	public static Archive<JavaArchive> createJARDeployment() {
 		// Create the web archive to test
@@ -100,13 +113,13 @@ public class LoginScreenGrapheneTest {
 						"persistence.xml")
 				.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
-		System.out.println("JAR Content is::" + jar.toString(true));
+		log.fine("JAR Content is::" + jar.toString(true));
 		return jar;
 	}
 
-	// Note frig as 'UsingDataSet' doesn't work for 'RunAsClient'
-	// Even the 'frig' doesn't work because this test running in the server
-	// for some reason needs the WebDriver class still injecting.
+	// Note 'artistic license' as 'UsingDataSet' doesn't work for 'RunAsClient'
+	// For some reason needs the WebDriver class still injecting hence its presence
+	// in the deployment
 	@Test
 	@InSequence(1)
 	@UsingDataSet("credentials.yml")
@@ -116,8 +129,19 @@ public class LoginScreenGrapheneTest {
 		// Populates database since unable to use @UsingDataSet with
 		// @RunAsClient
 		// Check https://issues.jboss.org/browse/ARQ-1077
+		log.info("Database data initialised in advance of tests");
 	}
 
+	// Inject the WebDriver to allow interactions with the desired browser (as specified in
+	// arquillian.xml. @Drone manages the Webdriver within the Arquillian framework and is 
+	// explained in details at: https://docs.jboss.org/author/display/ARQ/Drone
+	// It also utilises Arquillian Graphene to manage the the injection of pages, AJAX etc.
+	// The Graphene 2 project is designed as set of extensions for Selenium WebDriver project focused 
+	// on rapid development and usability in Java environment
+	// See https://docs.jboss.org/author/display/ARQGRA2/Home
+	//
+	// NOTE: The injected beans can also be tied to a particular deployment. Note necessary here
+	// but shown to see possibility.
 	@Test
 	@InSequence(2)
 	@RunAsClient
@@ -126,7 +150,7 @@ public class LoginScreenGrapheneTest {
 			@Drone @OperateOnDeployment("login") WebDriver browser,
 			@ArquillianResource @OperateOnDeployment("login") URL deploymentUrl)
 			throws Exception {
-		System.out.println("GAV::Deployment URL is::"
+		log.info("GAV::Deployment URL is::"
 				+ deploymentUrl.toExternalForm() + "login.jsf");
 
 		// Perform the get and render the content
@@ -136,10 +160,12 @@ public class LoginScreenGrapheneTest {
 		userName.sendKeys("demo");
 		password.sendKeys("demo123");
 
-		guardHttp(loginButton).click(); // 1. synchronize full-page request
+		//Will wait until full page is rendered by request guard or unless timeout occurs
+		guardHttp(loginButton).click();
 		assertEquals("Welcome", facesMessage.getText().trim());
 
-		guardAjax(whoAmI).click(); // 2. synchronize AJAX request
+		//Will wait until the Ajax request has finished or timed-out
+		guardAjax(whoAmI).click(); 
 		assertTrue(signedAs.getText().contains("demo"));
 	}
 
@@ -151,8 +177,10 @@ public class LoginScreenGrapheneTest {
 			@Drone @OperateOnDeployment("login") WebDriver browser,
 			@ArquillianResource @OperateOnDeployment("login") URL deploymentUrl)
 			throws Exception {
-		System.out.println("GAV::Deployment URL is::"
+		Logger log = Logger.getLogger(this.getClass().getName());
+		log.fine("GAV::Deployment URL is::"
 				+ deploymentUrl.toExternalForm() + "login.jsf");
+
 
 		// Perform the get and render the content
 		browser.get(deploymentUrl.toExternalForm() + "login.jsf"); // first page
@@ -161,7 +189,8 @@ public class LoginScreenGrapheneTest {
 		userName.sendKeys("demo");
 		password.sendKeys("demo124");
 
-		guardHttp(loginButton).click(); // 1. synchronize full-page request
+		//Will wait until full page is rendered by request guard or unless timeout occurs
+		guardHttp(loginButton).click();
 		assertNotEquals("Welcome", facesMessage.getText().trim());
 	}
 

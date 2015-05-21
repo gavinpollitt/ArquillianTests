@@ -7,7 +7,9 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+// Model - shorthand for @RequestScoped and @Named. Can now be used by JSFs directly
 @Model
+// Entity - Maps as a JPA entity to allow automated persistence to data storage.
 @Entity
 public class Credentials {
 	private int	   id;

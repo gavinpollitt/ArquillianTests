@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--  Not used for this project, but allow the set up of the non-default datasource.
+      At present, using default ExampleDS -->
 <datasources xmlns="http://www.jboss.org/ironjacamar/schema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="

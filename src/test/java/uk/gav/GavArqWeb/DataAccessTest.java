@@ -2,6 +2,9 @@ package uk.gav.GavArqWeb;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -27,6 +30,10 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class DataAccessTest {
 
+	// Use standard Java logging. Note that as this bean is hosted in container, it it the container
+	// logging.properties that will be used rather than that defined by this project.
+	private static Logger log = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	
 	private static final Credentials[] CREDS = {
 			new Credentials("demo", "demo123"),
 			new Credentials("gavin", "pollitt"),
@@ -36,7 +43,8 @@ public class DataAccessTest {
 
 
 
-	@Deployment(name = "gav", testable = true, order = 1)
+	// Didn't really need these other params, but put on there just to show their availability
+	@Deployment(name = "persistence", testable = true, order = 1)
 	public static Archive<JavaArchive> createJARDeployment() {
 
 		// Note: persistence.xml was a big problem to start with. Needed a test
@@ -49,16 +57,17 @@ public class DataAccessTest {
 				.addClasses(Credentials.class)
 				.addAsManifestResource("testing-persistence.xml",
 						"persistence.xml")
-				.addAsManifestResource("jbossas-ds.xml")
 				.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
-		System.out.println("Content is::" + persJar.toString(true));
+		log.fine(" Content of SW jar is::" + persJar.toString(true));
 		return persJar;
 	}
 
+	// As this test will run in the container, the context will be injected.
 	@PersistenceContext
 	EntityManager em;
 
+	// Same with the transaction
 	@Inject
 	UserTransaction utx;
 
@@ -95,11 +104,11 @@ public class DataAccessTest {
 	}
 	
 	@Test
-	@OperateOnDeployment("gav")
+	@OperateOnDeployment("persistence")
 	public void persist() throws Exception {
 		preparePersistenceTest();
 		Query q = em.createQuery("SELECT id from Credentials");
-		System.out.println("Rows in the DB::" + q.getResultList().size());
+		log.info("Rows found in the DB::" + q.getResultList().size());
 		assertEquals(3, q.getResultList().size());
 	}
 

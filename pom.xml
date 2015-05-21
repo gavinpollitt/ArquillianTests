@@ -134,7 +134,12 @@
 			<artifactId>jboss-logging-processor</artifactId>
 			<version>2.0.0.Final</version>
 		</dependency>
-		<!--  Needed to add the below to prevent the StaticLogBinder issue -->
+		<dependency>
+			<groupId>org.jboss.logmanager</groupId>
+			<artifactId>jboss-logmanager</artifactId>
+			<version>1.5.2.Final</version>
+		</dependency>
+		<!-- Needed to add the below to prevent the StaticLogBinder issue -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
@@ -232,10 +237,12 @@
 				<configuration>
 					<environmentVariables>
 						<JBOSS_HOME>${project.build.directory}/wildfly-${version.wildfly}</JBOSS_HOME>
-						<org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
-						<!-- <java.util.logging.config.file> ${project.build.testOutputDirectory}/logging.properties 
-							</java.util.logging.config.file> -->
 					</environmentVariables>
+					<systemPropertyVariables>
+						<!--  note, these do not work in Eclipse and have to be added directly as -D JVM parameters -->
+						<java.util.logging.config.file>${project.build.outputDirectory}/logging.properties</java.util.logging.config.file>
+						<!--<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>-->
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 		</plugins>
