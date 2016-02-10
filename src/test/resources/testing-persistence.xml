@@ -7,6 +7,8 @@
 	<persistence-unit name="testGAV">
 		<!--<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> -->
 		<!--<jta-data-source>java:jdbc/arquillian</jta-data-source> -->
+		<!-- jta refererred to instead of jpa for some reason? See:
+		https://docs.jboss.org/hibernate/entitymanager/3.5/reference/en/html/configuration.html -->
 		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
 		<properties>
 			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
